@@ -8,7 +8,7 @@
 const PREFIJO = "tao-salud-";
 
 // <<GENERADO por scripts/actualizar_sw.py: no editar a mano
-const VERSION = "abaa27cc34";
+const VERSION = "cc1e4d91bd";
 const ARCHIVOS = [
   "css/app.css",
   "datos/plan.enc",

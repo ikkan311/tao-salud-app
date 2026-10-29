@@ -56,7 +56,7 @@ export function vistaPlan(fechaIso, filtro = {}) {
     ${seccionApp()}
     <section class="card"><p class="eyebrow">Aspecto</p><h2>Tema de la app</h2>
       <p class="small muted">Automático sigue al celular. Claro u oscuro la dejan fija, aunque el celular cambie.</p>
-      <div class="seg-grupo" role="group" aria-label="Tema de la app">${TEMAS.map(([k, n]) => `<button type="button" class="seg-op${temaGuardado() === k ? " activo" : ""}" data-tema="${k}" aria-pressed="${temaGuardado() === k}">${n}</button>`).join("")}</div></section>
+      <div class="seg-grupo tema" role="group" aria-label="Tema de la app">${TEMAS.map(([k, n]) => `<button type="button" class="seg-op${temaGuardado() === k ? " activo" : ""}" data-tema="${k}" aria-pressed="${temaGuardado() === k}">${n}</button>`).join("")}</div></section>
     ${modoCifrado.activo ? `<section class="card"><p class="eyebrow">Seguridad</p><h2>Datos cifrados</h2>
       <p class="small muted">El plan se abre con una contraseña que este dispositivo ya conoce. Si le prestás el celular a alguien o lo vendés, olvidala: la próxima vez que abras la app te la va a pedir. Tus registros no se borran.</p>
       <button type="button" class="button secondary full" data-olvidar-clave>Olvidar en este dispositivo</button></section>` : ""}

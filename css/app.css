@@ -250,7 +250,19 @@ details.plegable > summary::-webkit-details-marker { display: none; }
 .seg-grupo { display: flex; gap: 6px; }
 .seg-grupo.envuelve, .seg-grupo.cuatro { flex-wrap: wrap; }
 .seg-grupo.envuelve .seg-op { flex: 1 0 auto; }
+.seg-grupo.tema .seg-op { min-width: 0; padding: 0 4px; font-size: .82rem; white-space: nowrap; }
 .seg-grupo.cuatro .seg-op { flex: 1 1 calc(50% - 6px); }
+.seg-grupo.platos { flex-wrap: wrap; }
+.seg-grupo.platos .seg-op { flex: 1 1 calc(50% - 6px); }
+.seg-grupo.platos .seg-op:nth-child(-n+2) { flex: 1 1 100%; text-align: left; padding: 12px 14px; min-height: 56px; line-height: 1.35; }
+/* Otro plato del menú: lista de tarjetas */
+.plato-lista { display: flex; flex-direction: column; gap: 8px; }
+.plato-grupo { margin: 12px 0 0; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.plato-lista .seg-op.plato-op { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 3px; padding: 12px 14px; min-height: 64px; font-weight: 500; flex: none; }
+.plato-op .plato-dia { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.plato-op .plato-nombre { font-weight: 650; font-size: .9rem; line-height: 1.35; }
+.plato-op .plato-dif { font-size: .78rem; opacity: .85; }
+.plato-elegido { display: block; margin-top: 2px; font-size: .78rem; font-weight: 500; color: var(--green); }
 .seg-op {
   flex: 1; min-height: 48px; min-width: 52px; padding: 0 10px; border: 1px solid var(--borde); border-radius: 12px;
   background: var(--superficie); color: var(--tinta-2); font: inherit; font-weight: 600; cursor: pointer;
@@ -587,6 +599,7 @@ h3{font-size:1rem;line-height:1.5}
 .empty svg{color:var(--green);margin-bottom:12px;width:28px;height:28px}
 .empty h2{color:var(--ink);margin:0 0 9px}
 .empty p{font-size:.86rem;margin-bottom:0}
+.empty p + .button{margin-top:20px}
 .notice{font-size:.8rem;padding:13px 15px;border-radius:13px;background:var(--green-soft);color:var(--green);display:flex;gap:10px;align-items:flex-start;margin-bottom:18px}
 .notice.warning{background:var(--amber-soft);color:var(--amber)}
 .notice svg{width:18px;height:18px;margin-top:2px}
@@ -769,14 +782,15 @@ select{width:100%;padding:10px 30px 10px 11px;min-width:0;border-radius:12px;bor
 .video-escena { position: relative; touch-action: pan-y; }
 .video-escena .video-placeholder, .video-escena .video-frame { margin: 0; }
 .video-escena .video-frame { border-radius: 17px; }
-.video-flecha { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: rgba(0,0,0,.5); color: #fff; z-index: 2; padding: 0; }
+.video-nav { display: flex; align-items: center; gap: 10px; padding-top: 12px; }
+.video-nav strong { flex: 1; text-align: center; font-size: .9rem; min-width: 0; }
+.video-flecha { flex: none; width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; background: var(--surface-soft); color: var(--ink); padding: 0; cursor: pointer; }
 .video-flecha svg { width: 22px; height: 22px; }
-.video-flecha.izq { left: 6px; }
-.video-flecha.der { right: 6px; }
-.video-info { display: flex; flex-direction: column; gap: 3px; padding: 12px 2px 4px; font-size: .85rem; touch-action: pan-y; }
+.video-info { display: flex; flex-direction: column; gap: 3px; padding: 8px 2px 4px; font-size: .85rem; touch-action: pan-y; }
 .video-info strong { font-size: .9rem; }
 .video-info small { color: var(--muted); font-size: .78rem; }
 .video-quitar { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--muted); font: inherit; font-size: .82rem; }
 .video-quitar.armado { border-color: var(--red, #c0392b); color: var(--red, #c0392b); font-weight: 700; }
 .video-restaurar { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .82rem; color: var(--muted); margin-top: 6px; }
 .video-badges { margin-bottom: 8px; }
+#la-app > .btn { margin-top: 14px; }

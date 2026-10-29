@@ -117,47 +117,47 @@ function filaPorcion(clave, r, g, comida) {
 
 const conSigno = (n) => (n > 0 ? `+${num(n)}` : n < 0 ? `−${num(-n)}` : "0");
 
-// «Otro plato del menú»: los platos de esa comida de cualquier día, con cuánto se apartan del objetivo de la comida
-// (tabla base de la Etapa 5, sin el recorte ni la inversa de ±160 kcal).
+// «Otro plato del menú»: los platos de esa comida de otros días, como tarjetas dentro de un desplegable, con cuánto se apartan del objetivo
+// de la comida (tabla base de la Etapa 5, sin el recorte ni la inversa de ±160 kcal). Los de hoy son los dos botones de arriba.
 function selectorPlato(fila, clave, r) {
   const tipo = diaPlan(fila.fecha).tipo_dia;
   const obj = plan.objetivos_comida[tipo]?.[fila.comida];
   const ocasionales = new Set(plan.platos_ocasionales.flatMap((o) => o.claves));
   const grupos = [
-    ["Hoy", (x) => x.dia === fila.dia],
     [`Otros días de ${tipo}`, (x) => x.dia !== fila.dia && x.tipo_dia === tipo],
     [`Días de ${tipo === "fuerza" ? "ayuno" : "fuerza"}`, (x) => x.tipo_dia !== tipo],
   ];
   const platos = platosDeComida(fila.comida);
-  const actual = r.plato_dia ? `${r.plato_dia}|${r.plato_opcion}` : "";
-  const opcion = (x) => {
-    const t = x.total;
-    const dif = obj && t ? ` · ${conSigno(Math.round(t.kcal - obj.kcal))} kcal · ${conSigno(Math.round(t.proteina_g - obj.proteina_g))} g prot.` : "";
-    const oca = ocasionales.has(`${x.dia}|${fila.comida}|${x.opcion}`) ? " (ocasional)" : "";
-    const valor = `${x.dia}|${x.opcion}`;
-    return `<option value="${esc(valor)}"${valor === actual ? " selected" : ""}>${esc(`${x.dia} · ${x.opcion} · ${t?.plato.replace(/^P\d+ · /, "") ?? "pendiente"}${dif}${oca}`)}</option>`;
+  const actual = r.plato_dia && r.plato_dia !== fila.dia ? `${r.plato_dia}|${r.plato_opcion}` : "";
+  const nombre = (x) => x.total?.plato.replace(/^P\d+ · /, "") ?? "pendiente";
+  const tarjeta = (x) => {
+    const t = x.total, valor = `${x.dia}|${x.opcion}`;
+    const dif = obj && t ? `${conSigno(Math.round(t.kcal - obj.kcal))} kcal · ${conSigno(Math.round(t.proteina_g - obj.proteina_g))} g prot.` : "";
+    const oca = ocasionales.has(`${x.dia}|${fila.comida}|${x.opcion}`) ? " · ocasional" : "";
+    return `<button type="button" class="seg-op plato-op${valor === actual ? " activo" : ""}" data-valor="${esc(JSON.stringify(valor))}" aria-pressed="${valor === actual}">
+      <span class="plato-dia">${esc(x.dia)} · opción ${esc(x.opcion)}</span><span class="plato-nombre">${esc(nombre(x))}</span><span class="plato-dif">${esc(dif + oca)}</span></button>`;
   };
-  return `<select class="sel" ${ref("comidas", clave, "plato")} aria-label="Otro plato del menú">
-    <option value="">— elegir un plato —</option>
-    ${grupos.map(([nombre, f]) => ({ nombre, xs: platos.filter(f) })).filter((g) => g.xs.length)
-      .map((g) => `<optgroup label="${esc(g.nombre)}">${g.xs.map(opcion).join("")}</optgroup>`).join("")}
-  </select>
-  <p class="sub">${obj ? `Objetivo de esta comida: ${num(obj.kcal)} kcal y ${num(obj.proteina_g)} g de proteína. ` : ""}La diferencia es contra la tabla base de la Etapa 5: no reparte por comida el recorte ni la inversa de ±160 kcal.</p>`;
+  const elegido = platos.find((x) => `${x.dia}|${x.opcion}` === actual);
+  return `<details class="disclosure"><summary><span>Otro plato del menú${elegido ? `<span class="plato-elegido">${esc(`${elegido.dia} · opción ${elegido.opcion}: ${nombre(elegido)}`)}</span>` : ""}</span></summary>
+    <div class="disclosure-body"><p class="sub">${obj ? `Objetivo de esta comida: ${num(obj.kcal)} kcal y ${num(obj.proteina_g)} g de proteína. ` : ""}La diferencia es contra la tabla base de la Etapa 5: no reparte por comida el recorte ni la inversa de ±160 kcal.</p>
+    <div class="plato-lista" ${ref("comidas", clave, "plato")} role="group">${grupos.map(([n, f]) => ({ n, xs: platos.filter(f) })).filter((g) => g.xs.length)
+      .map((g) => `<p class="plato-grupo">${esc(g.n)}</p>${g.xs.map(tarjeta).join("")}`).join("")}</div></div></details>`;
 }
 
 export function formComida(fila, x /* de calcularDia().comidas, más gluten_dia */) {
   const clave = claveComida(fila.fecha, fila.comida);
   const r = x.r;
   const ops = plan.que_comi[`${fila.dia}|${fila.comida}`] ?? [];
-  const etiquetas = Object.fromEntries(ops.map((o) => [o, o.startsWith("1") ? "Plato 1" : o.startsWith("2") ? "Plato 2" : o === "cambio" ? "Cambio" : "No comí"]));
+  // Los dos primeros botones son el menú 1 y el menú 2 del día, con el nombre del plato.
+  const etiquetas = Object.fromEntries(ops.map((o) => [o, /^[12] · /.test(o) ? o.replace(/^[12] · /, "") : o === "cambio" ? "Cambio" : "No comí"]));
   const res = x.res;
   // Si el plato es de otro día, ninguno de los botones Plato 1 y 2 está activo.
   const otroDia = !!r.plato_dia && r.plato_dia !== fila.dia;
   const g = x.gluten, gd = x.gluten_dia;
   const usaGluten = g && (g.pct > 0 || g.avisos.length);
   return `<div class="form registro-comida">
-    ${campo("¿Qué comiste?", botones("comidas", clave, "que_comi", ops, otroDia ? "" : r.que_comi ?? "", { etiquetas, clase: "cuatro" }))}
-    ${campo("Otro plato del menú", selectorPlato(fila, clave, r))}
+    ${campo("¿Qué comiste?", botones("comidas", clave, "que_comi", ops, otroDia ? "" : r.que_comi ?? "", { etiquetas, clase: "platos" }))}
+    ${selectorPlato(fila, clave, r)}
     ${r.que_comi === "cambio" ? `<div class="porciones-form">${gruposDe(fila.comida).map((g) => filaPorcion(clave, r, g, fila.comida)).join("")}</div>` : ""}
     <div class="porciones-form">${["bebida", "otro"].map((g) => filaPorcion(clave, r, g, fila.comida)).join("")}</div>
     ${r.que_comi === "no comí" && (r.bebida || r.otro) ? `<p class="nota">Con «no comí», la planilla no suma la bebida ni lo de «otro».</p>` : ""}

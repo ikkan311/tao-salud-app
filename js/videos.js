@@ -1,4 +1,5 @@
-// Videos de la ficha de un ejercicio: hasta 3, de a uno por vez, con flechas, deslizamiento y «1 de 3».
+// Videos de la ficha de un ejercicio: hasta 3, de a uno por vez, con flechas (debajo del video), deslizamiento y «1 de 3».
+// Con conexión, el video aparece directo con su vista previa y su botón de play (el reproductor de YouTube, sin arrancar solo).
 // YouTube es la primera opción (arranca en video_inicio y corta en video_fin). El link de Drive (`respaldo`, ya recortado)
 // se usa solo si la opción no tiene video_id o si YouTube avisa que no puede reproducirla.
 
@@ -24,7 +25,10 @@ const urlAbrirYoutube = (v) => `https://www.youtube.com/watch?v=${v.video_id}` +
 
 const visibles = (e) => (e.videos ?? []).filter((v) => !videoQuitado(e.id, v.opcion));
 
-// Lo que se ve en el cuadro del reproductor: aviso, o botón «Reproducir» para el video actual.
+// `fullscreen` en allow: sin eso el video no puede pasar a pantalla completa ni girar con el celular.
+const frame = (src, fuente) => `<iframe class="video-frame" data-fuente="${fuente}" title="Video del ejercicio" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen src="${esc(src)}"></iframe>`;
+
+// Lo que se ve en el cuadro del reproductor: el video con su vista previa, o un aviso si no se puede.
 function cuadro(v, modo) {
   const aviso = (txt, extra = "") => `<div class="video-placeholder">${icono("video")}<span>${txt}</span>${extra}</div>`;
   if (modo === "error") {
@@ -32,12 +36,17 @@ function cuadro(v, modo) {
       v.video_id ? `<a class="button secondary" href="${esc(urlAbrirYoutube(v))}" target="_blank" rel="noopener">Abrir en YouTube</a>` : "");
   }
   if (!navigator.onLine) return aviso("Video disponible con conexión");
-  return `<div class="video-placeholder">${icono("video")}<button type="button" class="button" data-vc="reproducir">Reproducir video</button></div>`;
+  if (v.video_id) return frame(urlYoutube(v), "yt");
+  const drive = urlIncrustable(v.respaldo);
+  return drive ? frame(drive, "drive") : aviso("Video pendiente");
 }
 
+// Fila de navegación debajo del video (las flechas no tapan el video) y datos del video.
 function pie(v, i, n) {
-  return `<div class="video-info" data-vc-deslizar>
-      <strong>${i + 1} de ${n}${v.canal ? ` · ${esc(v.canal)}` : ""}</strong>
+  const flecha = (acc, ico, txt) => `<button type="button" class="video-flecha" data-vc="${acc}" aria-label="${txt}">${icono(ico)}</button>`;
+  return `<div class="video-nav">${n > 1 ? flecha("ant", "izq", "Video anterior") : ""}
+      <strong>${i + 1} de ${n}${v.canal ? ` · ${esc(v.canal)}` : ""}</strong>${n > 1 ? flecha("sig", "der", "Video siguiente") : ""}</div>
+    <div class="video-info" data-vc-deslizar>
       ${v.titulo ? `<span>${esc(v.titulo)}</span>` : ""}${v.notas ? `<small>${esc(v.notas)}</small>` : ""}
     </div>
     <button type="button" class="video-quitar" data-vc="quitar">Quitar este video</button>`;
@@ -51,12 +60,8 @@ function interior(e) {
     : "";
   const etiqueta = `<div class="video-badges">${e.video_estado !== "aprobado" ? `<span class="badge warning">sin revisar</span>` : `<span class="badge">aprobado</span>`}</div>`;
   if (!vs.length) return `<div class="video-placeholder">${icono("video")}<span>Video pendiente</span></div>${restaurar}${etiqueta}`;
-  const flechas = vs.length > 1
-    ? `<button type="button" class="video-flecha izq" data-vc="ant" aria-label="Video anterior">${icono("izq")}</button>
-       <button type="button" class="video-flecha der" data-vc="sig" aria-label="Video siguiente">${icono("der")}</button>`
-    : "";
   return `<div class="video-carrusel" data-i="0">
-      <div class="video-escena" data-vc-escena data-vc-deslizar>${cuadro(vs[0])}${flechas}</div>
+      <div class="video-escena" data-vc-escena data-vc-deslizar>${cuadro(vs[0])}</div>
       <div data-vc-pie>${pie(vs[0], 0, vs.length)}</div>
     </div>${restaurar}${etiqueta}`;
 }
@@ -73,48 +78,29 @@ const actual = (b) => {
   return { e, c, vs, i: c ? Math.min(Number(c.dataset.i), vs.length - 1) : 0 };
 };
 
-function pintar(b, { modo } = {}) {
+function mostrar(b, html) {
   const { c, vs, i } = actual(b);
   c.dataset.i = i;
   const escena = c.querySelector("[data-vc-escena]");
   escena.querySelector("iframe")?.remove(); // sacar el iframe del video anterior lo detiene
   escena.querySelector(".video-placeholder")?.remove();
-  escena.insertAdjacentHTML("afterbegin", cuadro(vs[i], modo));
+  escena.insertAdjacentHTML("afterbegin", html);
   c.querySelector("[data-vc-pie]").innerHTML = pie(vs[i], i, vs.length);
-  c.dataset.fuente = "";
 }
 
-function ponerIframe(b, src, fuente) {
-  const c = b.querySelector(".video-carrusel");
-  const escena = c.querySelector("[data-vc-escena]");
-  escena.querySelector(".video-placeholder")?.remove();
-  escena.querySelector("iframe")?.remove();
-  const f = document.createElement("iframe");
-  f.className = "video-frame";
-  f.title = "Video del ejercicio";
-  f.allow = "encrypted-media; picture-in-picture";
-  f.allowFullscreen = true;
-  // Para que YouTube avise por postMessage si no puede reproducir el video (sin cargar su script).
-  if (fuente === "yt") f.addEventListener("load", () => f.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), ORIGEN_YT));
-  f.src = src;
-  escena.insertAdjacentElement("afterbegin", f);
-  c.dataset.fuente = fuente;
-}
+const pintar = (b, { modo } = {}) => mostrar(b, cuadro(actual(b).vs[actual(b).i], modo));
 
-function reproducir(b) {
-  const { vs, i } = actual(b);
-  const v = vs[i];
-  if (v.video_id) return ponerIframe(b, urlYoutube(v), "yt");
-  const drive = urlIncrustable(v.respaldo);
-  if (drive) return ponerIframe(b, drive, "drive");
-  pintar(b, { modo: "error" });
-}
+// Para que YouTube avise por postMessage si no puede reproducir el video (sin cargar su script).
+document.addEventListener("load", (ev) => {
+  const f = ev.target;
+  if (f?.matches?.('iframe[data-fuente="yt"]')) f.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), ORIGEN_YT);
+}, true);
 
 // Si YouTube falla: pasa solo al respaldo de Drive de esa opción; si no hay, avisa.
 function falloYoutube(b) {
   const { vs, i } = actual(b);
   const drive = urlIncrustable(vs[i]?.respaldo);
-  if (drive) ponerIframe(b, drive, "drive"); else pintar(b, { modo: "error" });
+  if (drive) mostrar(b, frame(drive, "drive")); else pintar(b, { modo: "error" });
 }
 
 window.addEventListener("message", (ev) => {
@@ -124,7 +110,7 @@ window.addEventListener("message", (ev) => {
   if (d?.event !== "onError") return;
   const f = [...document.querySelectorAll(".video-carrusel iframe")].find((x) => x.contentWindow === ev.source);
   const b = f && bloqueDe(f);
-  if (b && b.querySelector(".video-carrusel").dataset.fuente === "yt") falloYoutube(b);
+  if (b && f.dataset.fuente === "yt") falloYoutube(b);
 });
 
 function mover(b, paso) {
@@ -140,8 +126,7 @@ document.addEventListener("click", async (ev) => {
   const b = t && bloqueDe(t);
   if (!b) return;
   const acc = t.dataset.vc;
-  if (acc === "reproducir") reproducir(b);
-  else if (acc === "ant") mover(b, -1);
+  if (acc === "ant") mover(b, -1);
   else if (acc === "sig") mover(b, 1);
   else if (acc === "quitar") {
     if (armado !== t) {
@@ -162,8 +147,7 @@ document.addEventListener("click", async (ev) => {
   }
 });
 
-// Deslizar con el dedo sobre el cuadro (antes de reproducir) o sobre el texto del video.
-// Con el video en reproducción el iframe se queda con los toques: ahí se usan las flechas.
+// Deslizar con el dedo sobre el texto del video. Sobre el video el iframe se queda con los toques: ahí se usan las flechas.
 let toque = null;
 document.addEventListener("touchstart", (ev) => {
   const z = ev.target.closest("[data-vc-deslizar]");

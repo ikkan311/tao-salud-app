@@ -406,7 +406,7 @@ window.addEventListener("hashchange", () => { if (hoja.open) { estado.pila = [];
 document.addEventListener("app-estado", () => { if (plan && estado.fecha && location.hash === "#/plan") refrescar(); });
 
 // Al perder o recuperar la red se vuelve a dibujar el aviso de los videos (salvo que uno se esté reproduciendo).
-for (const e of ["online", "offline"]) window.addEventListener(e, () => { if (raiz.querySelector(".video-placeholder") || (hoja.open && hojaContenido.querySelector(".video-placeholder"))) refrescar(); });
+for (const e of ["online", "offline"]) window.addEventListener(e, () => { if (raiz.querySelector(".video-placeholder, .video-frame") || (hoja.open && hojaContenido.querySelector(".video-placeholder, .video-frame"))) refrescar(); });
 
 aplicarTema();
 iniciarServiceWorker();
