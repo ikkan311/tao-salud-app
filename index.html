@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#f7f6f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111d23" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <title>TAO Salud</title>
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip-link" href="#vista">Ir al contenido</a>
+  <header class="app-header">
+    <a href="#/hoy" class="brand" aria-label="TAO Salud, ir a Hoy">
+      <span class="brand-mark" aria-hidden="true"><i></i></span>
+      <span>TAO<span class="brand-subtitle">SALUD</span></span>
+    </a>
+    <span class="mode-label"><span class="status-dot"></span> En tu dispositivo</span>
+  </header>
+
+  <main id="vista" class="vista" aria-live="polite" tabindex="-1"><p class="cargando">Cargando el plan…</p></main>
+
+  <div class="bottom-dock">
+    <a class="alarm-button" href="#/alarma" aria-label="Señales de alarma"><span id="icono-alarma" aria-hidden="true"></span><span>Señales de alarma</span><span aria-hidden="true">↗</span></a>
+    <nav class="bottom-nav" aria-label="Secciones" id="navegacion"></nav>
+  </div>
+
+  <dialog id="hoja" aria-labelledby="hoja-titulo">
+    <div class="dialog-header"><button type="button" class="icon-button" id="hoja-atras" aria-label="Volver al detalle anterior" hidden></button><h2 id="hoja-titulo">Cargar registro</h2><button type="button" class="icon-button" id="hoja-cerrar" aria-label="Cerrar"></button></div>
+    <div id="hoja-contenido" class="dialog-content"></div>
+  </dialog>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

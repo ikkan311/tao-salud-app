@@ -1,0 +1,6 @@
+# Nada de datos sin cifrar ni de archivos de trabajo
+datos/plan.json
+*.xlsx
+*.docx
+*.csv
+node_modules/
