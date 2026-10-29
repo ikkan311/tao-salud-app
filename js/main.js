@@ -3,6 +3,7 @@
 import { esc, icono, aISO, sumarDias } from "./util.js";
 import { cargar, plan } from "./datos.js";
 import { olvidarClave } from "./cifrado.js";
+import { aplicarTema, guardarTema } from "./tema.js";
 import { abrir, guardarCampo, guardarCampos, guardarFilas, borrar, valor, vacio } from "./registros.js";
 import { analizar, aplicar, exportar, GRUPOS_TODOS } from "./planilla.js";
 import { iniciar as iniciarServiceWorker, actualizar, buscarActualizacion, instalar } from "./actualizacion.js";
@@ -244,6 +245,13 @@ function descargar() {
   avisar("Archivo exportado");
 }
 
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("button[data-tema]");
+  if (!b) return;
+  guardarTema(b.dataset.tema);
+  refrescar();
+});
+
 document.addEventListener("click", async (ev) => {
   if (!ev.target.closest("[data-olvidar-clave]")) return;
   if (!confirm("¿Olvidar la contraseña en este dispositivo? Para volver a abrir el plan vas a tener que ponerla de nuevo. Tus registros no se borran.")) return;
@@ -400,6 +408,7 @@ document.addEventListener("app-estado", () => { if (plan && estado.fecha && loca
 // Al perder o recuperar la red se vuelve a dibujar el aviso de los videos (salvo que uno se esté reproduciendo).
 for (const e of ["online", "offline"]) window.addEventListener(e, () => { if (raiz.querySelector(".video-placeholder") || (hoja.open && hojaContenido.querySelector(".video-placeholder"))) refrescar(); });
 
+aplicarTema();
 iniciarServiceWorker();
 
 // Pantalla de la contraseña: se muestra solo la primera vez en cada dispositivo (o después de «Olvidar en este dispositivo»).

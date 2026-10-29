@@ -1,4 +1,4 @@
-/* TAO Salud — mobile first, Chrome en Android. Claro y oscuro según el sistema. */
+/* TAO Salud — mobile first, Chrome en Android. Claro y oscuro según el sistema (o fijado en Plan). */
 
 :root {
   /* Tokens del diseño (docs/diseno.md) */
@@ -21,8 +21,9 @@
   color-scheme: light;
 }
 
+/* Tema: sigue al sistema; en Plan se puede fijar claro u oscuro (atributo data-tema en <html>, js/tema.js). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema="claro"]) {
     --bg: #111d23; --surface: #192a30; --surface-soft: #23363b; --ink: #e6ede5; --muted: #abbcb7; --line: #32464a;
     --green: #96d7b6; --green-deep: #b6ebcd; --green-soft: #213e35; --hero: #23463f; --hero-text: #f0f6e9;
     --red: #ffb2a9; --red-soft: #39282a; --amber: #f3ce81; --amber-soft: #3b3424;
@@ -32,6 +33,16 @@
     --verde-suave: #1d3326; --naranja-suave: #40281a;
     color-scheme: dark;
   }
+}
+:root[data-tema="oscuro"] {
+    --bg: #111d23; --surface: #192a30; --surface-soft: #23363b; --ink: #e6ede5; --muted: #abbcb7; --line: #32464a;
+    --green: #96d7b6; --green-deep: #b6ebcd; --green-soft: #213e35; --hero: #23463f; --hero-text: #f0f6e9;
+    --red: #ffb2a9; --red-soft: #39282a; --amber: #f3ce81; --amber-soft: #3b3424;
+    --sem-verde: #6cc08b; --sem-amarillo: #e3c04d; --sem-naranja: #f0965c;
+    --shadow: none;
+    --tinta-2: #c4d1cb; --g-neutro: #698276;
+    --verde-suave: #1d3326; --naranja-suave: #40281a;
+    color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -76,7 +87,8 @@ button.enlace { background: none; border: 0; padding: 0; font: inherit; font-wei
   min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--acento); color: #fff;
   font: inherit; font-weight: 600; cursor: pointer; margin-top: 10px;
 }
-@media (prefers-color-scheme: dark) { .btn { color: #10201B; } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .btn { color: #10201B; } }
+:root[data-tema="oscuro"] .btn { color: #10201B; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .chip { padding: 3px 10px; border-radius: 999px; background: var(--superficie-2); color: var(--tinta-2); font-size: .85rem; }
 
@@ -136,7 +148,8 @@ details.ej-indic > summary { min-height: 44px; font-size: .9rem; color: var(--ti
 .segmentado { display: flex; background: var(--superficie-2); border-radius: 12px; padding: 4px; margin: 10px 0 12px; }
 .seg { flex: 1; min-height: 44px; border: 0; border-radius: 9px; background: none; font: inherit; font-weight: 600; color: var(--tinta-2); cursor: pointer; }
 .seg.activo { background: var(--superficie); color: var(--tinta); box-shadow: var(--sombra); }
-@media (prefers-color-scheme: dark) { .seg.activo { background: var(--borde); } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .seg.activo { background: var(--borde); } }
+:root[data-tema="oscuro"] .seg.activo { background: var(--borde); }
 .plato { font-size: 1.05rem; margin-bottom: 8px; }
 .macros { display: flex; flex-wrap: wrap; gap: 6px; }
 .macro { background: var(--superficie-2); border-radius: 8px; padding: 4px 9px; font-size: .85rem; color: var(--tinta-2); }
@@ -292,7 +305,8 @@ label.fila-enlace { cursor: pointer; }
 .aj-texto { display: flex; flex-direction: column; }
 .btn-chico { min-height: 44px; padding: 0 14px; border: 1px solid var(--borde); border-radius: 10px; background: var(--superficie); color: var(--rojo); font: inherit; font-weight: 600; cursor: pointer; }
 .btn-secundario { background: var(--superficie-2); color: var(--tinta); }
-@media (prefers-color-scheme: dark) { .btn-secundario { color: var(--tinta); } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .btn-secundario { color: var(--tinta); } }
+:root[data-tema="oscuro"] .btn-secundario { color: var(--tinta); }
 .acciones { display: flex; flex-direction: column; margin-bottom: 12px; }
 .g-real { fill: none; stroke: var(--acento); stroke-width: 2.5; }
 .g-real-punto { fill: var(--acento); }
@@ -396,7 +410,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .button, .btn { border: 1px solid var(--green); background: var(--green); color: #fff; padding: 11px 17px; border-radius: 12px; font: inherit; font-size: .85rem; font-weight: 600; display: inline-flex; gap: 9px; align-items: center; justify-content: center; text-decoration: none; cursor: pointer; margin-top: 0; min-height: 44px; }
 .button.secondary, .btn-secundario { background: transparent; color: var(--green); border-color: var(--line); }
 .button.full { width: 100%; }
-@media (prefers-color-scheme: dark) { .button, .btn { color: #112e25; } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .button, :root:not([data-tema="claro"]) .btn { color: #112e25; } }
+:root[data-tema="oscuro"] .button, :root[data-tema="oscuro"] .btn { color: #112e25; }
 
 /* desplegables */
 .disclosure { border: 1px solid var(--line); background: var(--surface); border-radius: 17px; margin-bottom: 12px; overflow: hidden; }
@@ -520,7 +535,8 @@ a.button.secondary { display: inline-flex; align-items: center; justify-content:
 .pill-tabs { display: flex; gap: 8px; margin: 0 0 16px; }
 .pill-tab { min-height: 44px; border: 1px solid var(--line); background: var(--surface); font: inherit; cursor: pointer; }
 .pill-tab[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
-@media (prefers-color-scheme: dark) { .pill-tab[aria-pressed="true"] { color: #112e25; } }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .pill-tab[aria-pressed="true"] { color: #112e25; } }
+:root[data-tema="oscuro"] .pill-tab[aria-pressed="true"] { color: #112e25; }
 .g-suelto { fill: none; stroke: var(--acento); stroke-width: 1.2; }
 .titulo-chico { font-size: .9rem; margin: 10px 0 6px; }
 .entry-field { display: block; margin-bottom: 8px; }
