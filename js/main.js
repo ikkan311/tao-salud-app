@@ -5,7 +5,8 @@ import { cargar, plan } from "./datos.js";
 import { olvidarClave } from "./cifrado.js";
 import { aplicarTema, guardarTema } from "./tema.js";
 import { abrir, guardarCampo, guardarCampos, guardarFilas, borrar, valor, vacio } from "./registros.js";
-import { analizar, aplicar, exportar, GRUPOS_TODOS } from "./planilla.js";
+import { analizar, analizarHojas, aplicar, exportar, GRUPOS_TODOS } from "./planilla.js";
+import { iniciarRespaldo, indicador, estadoRespaldo, cuandoFue, enviarPendientes, configurar, quitarConfiguracion, leerPlanilla } from "./respaldo.js";
 import { iniciar as iniciarServiceWorker, actualizar, buscarActualizacion, instalar } from "./actualizacion.js";
 import { contenidoHoja, htmlHoja } from "./hoja.js";
 import { vistaHoy } from "./vistas/hoy.js";
@@ -411,6 +412,66 @@ for (const e of ["online", "offline"]) window.addEventListener(e, () => { if (ra
 aplicarTema();
 iniciarServiceWorker();
 
+// ---- Respaldo en Google Sheets: indicador en el encabezado y en Plan (se actualizan sin redibujar la pantalla, para no borrar lo que se está tipeando).
+function pintarIndicadores() {
+  const ind = indicador(), e = estadoRespaldo();
+  const punto = document.getElementById("punto-respaldo"), texto = document.getElementById("texto-respaldo");
+  if (punto) punto.className = `status-dot${ind.tipo === "pendiente" || ind.tipo === "error" ? " " + ind.tipo : ""}`;
+  if (texto) texto.textContent = ind.texto;
+  const linea = document.getElementById("estado-respaldo");
+  if (linea) { linea.className = `respaldo-estado ${ind.tipo}`; linea.textContent = ind.texto; }
+  const ultima = document.getElementById("resp-ultima"), pend = document.getElementById("resp-pendientes");
+  if (ultima) ultima.textContent = e.ultima ? cuandoFue(e.ultima) : "todavía ninguna";
+  if (pend) pend.textContent = e.pendientes;
+}
+document.addEventListener("respaldo-estado", pintarIndicadores);
+
+document.addEventListener("submit", async (ev) => {
+  if (ev.target.id !== "form-respaldo") return;
+  ev.preventDefault();
+  const boton = ev.target.querySelector("button"), error = document.getElementById("resp-error");
+  boton.disabled = true;
+  boton.textContent = "Probando…";
+  error.hidden = true;
+  try {
+    const r = await configurar(document.getElementById("resp-url").value, document.getElementById("resp-token").value);
+    refrescar();
+    avisar(`Respaldo configurado (${Object.values(r.filas ?? {}).reduce((a, n) => a + n, 0)} filas ya en la planilla)`);
+  } catch (e) {
+    error.textContent = e.message;
+    error.hidden = false;
+    boton.disabled = false;
+    boton.textContent = "Guardar y probar";
+  }
+});
+
+document.addEventListener("click", async (ev) => {
+  const b = ev.target.closest("[data-respaldo]");
+  if (!b) return;
+  const acc = b.dataset.respaldo;
+  if (acc === "enviar") {
+    b.disabled = true;
+    const r = await enviarPendientes({ forzar: true });
+    b.disabled = false;
+    if (r.error) avisar(r.error, "error");
+    else avisar(r.enviados ? `Se respaldaron ${r.enviados} registros` : navigator.onLine ? "No hay nada pendiente: todo está respaldado" : "Sin conexión: se manda cuando vuelva", r.enviados || navigator.onLine ? "ok" : "error");
+  } else if (acc === "restaurar") {
+    try {
+      avisar("Leyendo la planilla…");
+      estado.importacion = { ...analizarHojas(await leerPlanilla()), archivo: "la planilla de Google Sheets" };
+      document.getElementById("aviso").hidden = true;
+      if (location.hash === "#/plan/importar") render(); else location.hash = "#/plan/importar";
+    } catch (e) {
+      avisar(e.message, "error");
+    }
+  } else if (acc === "quitar") {
+    if (!confirm("¿Quitar la configuración del respaldo? No se borra nada de la planilla ni de este celular; dejan de mandarse los cambios hasta que la vuelvas a configurar.")) return;
+    quitarConfiguracion();
+    refrescar();
+    avisar("Respaldo desactivado");
+  }
+});
+
 // Pantalla de la contraseña: se muestra solo la primera vez en cada dispositivo (o después de «Olvidar en este dispositivo»).
 function pedirContrasena(error) {
   document.body.classList.add("bloqueada");
@@ -437,6 +498,7 @@ Promise.all([cargar(pedirContrasena), abrir()])
   .then(() => {
     estado.fecha = acotar(ahora().fecha);
     render();
+    iniciarRespaldo();
   })
   .catch((e) => {
     raiz.innerHTML = `<section class="tarjeta borde-alerta"><h2>No se pudo abrir el plan</h2><p>${esc(e.message)}</p></section>`;

@@ -4,6 +4,7 @@
 import { esc, md, seccionMd, slug, icono, num } from "../util.js";
 import { plan, objetivoDia, modoCifrado } from "../datos.js";
 import { TEMAS, temaGuardado } from "../tema.js";
+import { leerConfig, indicador, estadoRespaldo, cuandoFue } from "../respaldo.js";
 import { estadoDe, ajustes, objetivoDe } from "../calculos.js";
 import { cuantos } from "../registros.js";
 import { seccionApp } from "../actualizacion.js";
@@ -39,6 +40,37 @@ export function resultadosEjercicios({ q = "", cat = "", fase = "", limite = LIM
 
 // ---------------------------------------------------------------- pantalla Plan
 
+// Respaldo en Google Sheets: configuración del link y el token, estado de la última copia y restaurar.
+function seccionRespaldo() {
+  const cfg = leerConfig();
+  if (!cfg) {
+    return `<section class="card" id="respaldo"><p class="eyebrow">Respaldo</p><h2>Copia en Google Sheets</h2>
+      <p class="small muted">Hoy tus registros están solo en este celular. Con el link y el token de tu planilla, la app manda sola lo que cargás cada vez que hay conexión.
+      La planilla y el token se crean una sola vez; el paso a paso está en docs/respaldo-google-sheets.md del proyecto.</p>
+      <form id="form-respaldo" class="form" autocomplete="off">
+        <label class="campo"><span class="campo-l">Link de la aplicación web</span><input class="entrada" id="resp-url" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" autocapitalize="none" required></label>
+        <label class="campo"><span class="campo-l">Token</span><input class="entrada" id="resp-token" type="password" autocomplete="off" autocapitalize="none" required></label>
+        <p class="nota destacada" id="resp-error" role="alert" hidden></p>
+        <button type="submit" class="button full">Guardar y probar</button>
+      </form></section>`;
+  }
+  const ind = indicador(), e = estadoRespaldo();
+  const id = cfg.url.match(/\/s\/([\w-]+)\/exec/)?.[1] ?? "";
+  return `<section class="card" id="respaldo"><p class="eyebrow">Respaldo</p><h2>Copia en Google Sheets</h2>
+    <div class="respaldo-estado ${ind.tipo}" id="estado-respaldo">${esc(ind.texto)}</div>
+    <dl class="datos">
+      <dt>Última copia</dt><dd id="resp-ultima">${e.ultima ? esc(cuandoFue(e.ultima)) : "todavía ninguna"}</dd>
+      <dt>Sin respaldar</dt><dd id="resp-pendientes">${e.pendientes}</dd>
+      <dt>Planilla</dt><dd>…${esc(id.slice(-8))}</dd>
+    </dl>
+    ${cfg.error ? `<p class="nota destacada" id="resp-error-guardado" role="alert">${esc(cfg.error)} Se reintenta solo.</p>` : ""}
+    <div class="stack-buttons">
+      <button type="button" class="button full" data-respaldo="enviar">Enviar ahora</button>
+      <button type="button" class="button secondary full" data-respaldo="restaurar">Restaurar desde la planilla</button>
+      <button type="button" class="button secondary full" data-respaldo="quitar">Quitar la configuración</button></div>
+    <p class="small muted">Restaurar suma lo que hay en la planilla a lo de este celular y te muestra el resumen antes de guardar nada. Quitar la configuración no borra nada: ni la planilla ni tus registros.</p></section>`;
+}
+
 export function vistaPlan(fechaIso, filtro = {}) {
   const { estado } = estadoDe(fechaIso);
   const n = cuantos();
@@ -46,13 +78,14 @@ export function vistaPlan(fechaIso, filtro = {}) {
   const obj = objetivoDe(fechaIso);
   const d = plan.calendario.find((c) => c.fecha === fechaIso);
   return `<header class="page-heading"><p class="eyebrow">Tu biblioteca personal</p><h1>Plan</h1><p class="lede">Todo lo que necesitás consultar.</p></header>
-    <section class="card"><p class="eyebrow">Tus datos</p><h2>Registros y respaldo</h2>
+    <section class="card"><p class="eyebrow">Tus datos</p><h2>Importar y exportar</h2>
       <p class="small muted">Guardados en este celular: ${plural(n.diario, "día", "días")}, ${plural(n.comidas, "comida", "comidas")}, ${plural(n.registro, "ejercicio", "ejercicios")}, ${plural(n.medidas, "medición", "mediciones")} y ${plural(n.ajustes, "cambio", "cambios")} de ajuste.</p>
       <div class="stack-buttons">
         <label class="button full" for="importar-xlsx">Importar registros desde plan.xlsx</label>
         <input type="file" id="importar-xlsx" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
         <button type="button" class="button secondary full" data-exportar>Exportar registros</button></div>
       <p class="small muted">El archivo se procesa en tu dispositivo. Al importar se suman los datos ya cargados, sin duplicar. La exportación trae Diario, Comidas, Registro y Medidas.</p></section>
+    ${seccionRespaldo()}
     ${seccionApp()}
     <section class="card"><p class="eyebrow">Aspecto</p><h2>Tema de la app</h2>
       <p class="small muted">Automático sigue al celular. Claro u oscuro la dejan fija, aunque el celular cambie.</p>

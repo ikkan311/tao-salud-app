@@ -8,7 +8,7 @@
 const PREFIJO = "tao-salud-";
 
 // <<GENERADO por scripts/actualizar_sw.py: no editar a mano
-const VERSION = "cc1e4d91bd";
+const VERSION = "207f79e51a";
 const ARCHIVOS = [
   "css/app.css",
   "datos/plan.enc",
@@ -27,6 +27,7 @@ const ARCHIVOS = [
   "js/main.js",
   "js/planilla.js",
   "js/registros.js",
+  "js/respaldo.js",
   "js/tema.js",
   "js/util.js",
   "js/videos.js",

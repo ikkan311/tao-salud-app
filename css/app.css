@@ -360,6 +360,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visibl
 .brand-mark i { width: 13px; height: 13px; background: var(--green); border-radius: 50%; display: block; }
 .mode-label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .75rem; font-weight: 550; }
 .status-dot { height: 6px; width: 6px; background: var(--green); border-radius: 50%; }
+.status-dot.pendiente { background: var(--sem-amarillo); }
+.status-dot.error { background: var(--red); }
+.entrada { min-height: 48px; width: 100%; padding: 0 12px; border: 1px solid var(--borde); border-radius: 12px; background: var(--superficie); color: var(--tinta); font: inherit; font-size: .85rem; }
+.respaldo-estado { display: flex; align-items: center; gap: 8px; font-weight: 600; margin: 4px 0 10px; }
+.respaldo-estado.error { color: var(--red); }
+.respaldo-estado.pendiente { color: var(--amber); }
 
 /* barra de fecha */
 .date-bar { margin: 0 0 23px; display: flex; gap: 7px; align-items: center; }
@@ -794,3 +800,4 @@ select{width:100%;padding:10px 30px 10px 11px;min-width:0;border-radius:12px;bor
 .video-restaurar { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .82rem; color: var(--muted); margin-top: 6px; }
 .video-badges { margin-bottom: 8px; }
 #la-app > .btn { margin-top: 14px; }
+#respaldo .datos + .nota { margin: 12px 0; }

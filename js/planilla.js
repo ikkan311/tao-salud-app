@@ -196,7 +196,11 @@ function revisarPlato(nuevo, f, avisos, donde) {
 
 // Lee el archivo y arma el resumen sin guardar nada.
 export async function analizar(buffer) {
-  const hojas = await leerXlsx(buffer);
+  return analizarHojas(await leerXlsx(buffer));
+}
+
+// Lo mismo desde hojas ya leídas ({ nombre: [[encabezado], [fila], …] }): un archivo de Excel o la planilla de Google Sheets del respaldo.
+export function analizarHojas(hojas) {
   const res = { tablas: {}, avisos: [], hojasFaltantes: [] };
   for (const [tabla, nombreHoja] of Object.entries(HOJA)) {
     const filas = hojas[nombreHoja];
